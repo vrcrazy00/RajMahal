@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react';
 
-export default function Gallery({ images = [], title = 'Property Image' }) {
+export default function Gallery({ images = [], title = 'Property Image', fallbackImage = null }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
   // Normalize images array
   const displayImages = images.length > 0
     ? images
-    : [{ url: '/uploads/properties/villa-1.jpg', caption: 'Property Photo' }];
+    : [{ url: fallbackImage || '/uploads/properties/villa-1.jpg', caption: title || 'Property Preview' }];
 
   const currentImage = displayImages[selectedIndex] || displayImages[0];
 

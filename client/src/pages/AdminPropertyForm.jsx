@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import {
   Save,
   ArrowLeft,
+  ArrowRight,
   Upload,
   Trash2,
   Star,
@@ -34,6 +35,43 @@ const COMMON_AMENITIES = [
   'Freehold Title'
 ];
 
+function getVideoThumbnail(url) {
+  if (!url) return null;
+  const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/i);
+  if (yt && yt[1]) return `https://img.youtube.com/vi/${yt[1]}/hqdefault.jpg`;
+  const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+  if (vm && vm[1]) return `https://vumbnail.com/${vm[1]}.jpg`;
+  return null;
+}
+
+const DEFAULT_PROPERTY_FORM = {
+  title: '',
+  property_type: 'Plot',
+  listing_type: 'Sale',
+  price: '',
+  price_display: '',
+  location_name: 'Faridabad',
+  city: 'Faridabad',
+  state: 'Haryana',
+  address: '',
+  area: '',
+  area_unit: 'sq ft',
+  bedrooms: '',
+  bathrooms: '',
+  floors: '',
+  facing: 'North',
+  road_width: '30 ft',
+  parking: '',
+  furnished_status: 'Unfurnished',
+  construction_status: 'Plot / Land',
+  possession_date: 'Immediate',
+  description: '',
+  amenities: ['24x7 Security', 'Wide Roads', 'Gated Community'],
+  nearby_landmarks_text: '',
+  featured: 0,
+  status: 'Available'
+};
+
 export default function AdminPropertyForm() {
   const { id } = useParams();
   const isEdit = Boolean(id);
@@ -45,33 +83,7 @@ export default function AdminPropertyForm() {
   const [success, setSuccess] = useState('');
 
   // Form Fields State
-  const [formData, setFormData] = useState({
-    title: '',
-    property_type: 'Plot',
-    listing_type: 'Sale',
-    price: '',
-    price_display: '',
-    location_name: 'Faridabad',
-    city: 'Faridabad',
-    state: 'Haryana',
-    address: '',
-    area: '',
-    area_unit: 'sq ft',
-    bedrooms: '',
-    bathrooms: '',
-    floors: '',
-    facing: 'North',
-    road_width: '30 ft',
-    parking: '',
-    furnished_status: 'Unfurnished',
-    construction_status: 'Plot / Land',
-    possession_date: 'Immediate',
-    description: '',
-    amenities: ['24x7 Security', 'Wide Roads', 'Gated Community'],
-    nearby_landmarks_text: '',
-    featured: 0,
-    status: 'Available'
-  });
+  const [formData, setFormData] = useState(DEFAULT_PROPERTY_FORM);
 
   // Media state
   const [images, setImages] = useState([]);
@@ -115,7 +127,7 @@ export default function AdminPropertyForm() {
               featured: p.featured ? 1 : 0,
               status: p.status || 'Available'
             });
-            setImages(p.images || []);
+            setImages((p.images || []).filter(img => img.id && !img.id.startsWith('auto-') && !img.is_video_thumb));
             setVideos(p.videos || []);
           }
         } catch (err) {
@@ -125,6 +137,14 @@ export default function AdminPropertyForm() {
         }
       }
       loadExisting();
+    } else {
+      // Force clean reset when on /admin/properties/new
+      setFormData(DEFAULT_PROPERTY_FORM);
+      setImages([]);
+      setVideos([]);
+      setError('');
+      setSuccess('');
+      setFetching(false);
     }
   }, [id, isEdit]);
 
@@ -289,12 +309,12 @@ export default function AdminPropertyForm() {
       if (isEdit) {
         const res = await api.properties.adminUpdate(id, payload);
         if (res.success) {
-          setSuccess('Property updated successfully.');
+          navigate('/admin/properties', { replace: true });
         }
       } else {
         const res = await api.properties.adminCreate(payload);
         if (res.success && res.data) {
-          navigate(`/admin/properties/edit/${res.data.id}`);
+          navigate(`/admin/properties/edit/${res.data.id}`, { replace: true });
         }
       }
     } catch (err) {
@@ -820,24 +840,44 @@ export default function AdminPropertyForm() {
                 </div>
 
                 {videos.length > 0 && (
-                  <ul style={{ listStyle: 'none', marginTop: '1rem' }}>
-                    {videos.map((vid) => (
-                      <li key={vid.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 1rem', background: '#f8fafc', borderRadius: '8px', marginBottom: '0.5rem', border: '1px solid #e2e8f0' }}>
-                        <div>
-                          <strong>{vid.title}</strong>
-                          <span style={{ fontSize: '0.8rem', color: '#64748b', marginLeft: '0.75rem' }}>{vid.video_url}</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteVideo(vid.id)}
-                          className="action-icon-btn delete"
-                          style={{ width: '28px', height: '28px' }}
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                  <div>
+                    {images.length === 0 && (
+                      <div style={{ padding: '0.75rem 1rem', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', color: '#1d4ed8', fontSize: '0.85rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span>✨ <strong>No photos uploaded:</strong> This video's thumbnail will automatically be used as the cover photo across the website!</span>
+                      </div>
+                    )}
+                    <ul style={{ listStyle: 'none', marginTop: '1rem' }}>
+                      {videos.map((vid) => {
+                        const thumb = getVideoThumbnail(vid.video_url);
+                        return (
+                          <li key={vid.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 1rem', background: '#f8fafc', borderRadius: '8px', marginBottom: '0.5rem', border: '1px solid #e2e8f0', gap: '0.75rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden' }}>
+                              {thumb ? (
+                                <img src={thumb} alt={vid.title} style={{ width: '56px', height: '38px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #cbd5e1', flexShrink: 0 }} />
+                              ) : (
+                                <div style={{ width: '56px', height: '38px', background: '#0f172a', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', flexShrink: 0 }}>
+                                  <Video size={16} />
+                                </div>
+                              )}
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{ fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{vid.title}</div>
+                                <div style={{ fontSize: '0.78rem', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{vid.video_url}</div>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteVideo(vid.id)}
+                              className="action-icon-btn delete"
+                              style={{ width: '28px', height: '28px', flexShrink: 0 }}
+                              title="Delete Video"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
                 )}
               </div>
             </div>

@@ -186,7 +186,9 @@ export default function AdminProperties() {
                 </tr>
               ) : (
                 properties.map((prop) => {
-                  const thumb = prop.primary_image || prop.images?.[0]?.url || '/uploads/properties/villa-1.jpg';
+                  const isPlot = prop.property_type && (prop.property_type.includes('Plot') || prop.property_type.includes('Land'));
+                  const defaultFallback = isPlot ? '/uploads/properties/plot-1.jpg' : '/uploads/properties/villa-1.jpg';
+                  const thumb = prop.primary_image || prop.images?.[0]?.url || defaultFallback;
                   return (
                     <tr key={prop.id}>
                       <td>
@@ -195,7 +197,7 @@ export default function AdminProperties() {
                             src={thumb}
                             alt={prop.title}
                             className="table-thumb"
-                            onError={(e) => { e.target.onerror = null; e.target.src = '/uploads/properties/villa-1.jpg'; }}
+                            onError={(e) => { e.target.onerror = null; e.target.src = defaultFallback; }}
                           />
                           <div>
                             <div style={{ fontWeight: 700, color: '#0f172a', maxWidth: '240px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

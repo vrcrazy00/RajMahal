@@ -213,7 +213,7 @@ export default function PropertyDetail() {
           {/* LEFT COLUMN: Gallery, Specs, Amenities, Description, Video */}
           <div>
             {/* Image Gallery with Lightbox */}
-            <Gallery images={property.images} title={property.title} />
+            <Gallery images={property.images} title={property.title} fallbackImage={property.primary_image} />
 
             {/* Technical Specifications */}
             <div className="detail-card">

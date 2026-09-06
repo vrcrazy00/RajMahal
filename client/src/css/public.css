@@ -560,9 +560,9 @@
 /* Footer */
 .site-footer {
   background: #080d1a;
-  color: var(--slate-300);
+  color: #cbd5e1;
   padding: 4.5rem 0 2rem 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .footer-grid {
@@ -578,12 +578,13 @@
   font-weight: 700;
   color: #ffffff;
   margin-bottom: 1.25rem;
+  letter-spacing: 0.01em;
 }
 
 .footer-about {
-  font-size: 0.9rem;
-  line-height: 1.65;
-  color: var(--slate-400);
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: #94a3b8;
   margin-bottom: 1.5rem;
 }
 
@@ -592,17 +593,21 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  padding: 0;
+  margin: 0;
 }
 
 .footer-link {
   font-size: 0.9rem;
-  color: var(--slate-300);
+  color: #cbd5e1;
+  text-decoration: none;
   transition: var(--transition-fast);
+  display: inline-block;
 }
 
 .footer-link:hover {
-  color: var(--gold-400);
-  transform: translateX(3px);
+  color: #e5b364;
+  transform: translateX(4px);
 }
 
 .footer-contact-item {
@@ -610,26 +615,52 @@
   align-items: flex-start;
   gap: 0.75rem;
   font-size: 0.9rem;
-  color: var(--slate-300);
+  color: #cbd5e1;
   margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.footer-contact-item a {
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+.footer-contact-item a:hover {
+  color: #e5b364;
 }
 
 .footer-contact-item svg {
   flex-shrink: 0;
-  color: var(--gold-400);
+  color: #e5b364;
   margin-top: 0.2rem;
 }
 
 .footer-bottom {
   padding-top: 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 0.85rem;
-  color: var(--slate-400);
+  color: #94a3b8;
   flex-wrap: wrap;
   gap: 1rem;
+}
+
+.footer-bottom p {
+  color: #94a3b8;
+  margin: 0;
+}
+
+.footer-bottom a {
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+.footer-bottom a:hover {
+  color: #e5b364;
 }
 
 /* Floating WhatsApp / Phone Widget */

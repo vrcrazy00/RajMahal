@@ -443,12 +443,12 @@ export function seedDatabase() {
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
 
-  // Clear existing properties for fresh seed
-  db.exec('DELETE FROM property_images');
-  db.exec('DELETE FROM property_videos');
-  db.exec('DELETE FROM enquiries');
-  db.exec('DELETE FROM appointments');
-  db.exec('DELETE FROM properties');
+  // Only seed if properties table is completely empty (preserve user submissions)
+  const existingPropCount = db.prepare('SELECT COUNT(*) as c FROM properties').get()?.c || 0;
+  if (existingPropCount > 0) {
+    console.log(`Database already has ${existingPropCount} properties. Preserving existing data.`);
+    return;
+  }
 
   for (const p of properties) {
     const locId = locMap[p.location_name.toLowerCase()] || null;

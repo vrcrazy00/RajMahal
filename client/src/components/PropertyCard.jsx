@@ -1,12 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Maximize2, BedDouble, Bath, ArrowRight } from 'lucide-react';
+import { MapPin, Maximize2, BedDouble, Bath, ArrowRight, Play } from 'lucide-react';
 
 export default function PropertyCard({ property }) {
   if (!property) return null;
 
   const statusClass = (property.status || 'available').toLowerCase().replace(/\s+/g, '-');
-  const primaryImg = property.primary_image || property.images?.[0]?.url || '/uploads/properties/villa-1.jpg';
+  const isPlot = property.property_type && (property.property_type.includes('Plot') || property.property_type.includes('Land'));
+  const defaultFallback = isPlot ? '/uploads/properties/plot-1.jpg' : '/uploads/properties/villa-1.jpg';
+  const primaryImg = property.primary_image || property.images?.[0]?.url || defaultFallback;
+  const isVideoTour = Boolean(property.has_video_thumbnail);
 
   return (
     <article className="property-card">
@@ -18,9 +21,31 @@ export default function PropertyCard({ property }) {
           loading="lazy"
           onError={(e) => {
             e.target.onerror = null;
-            e.target.src = '/uploads/properties/villa-1.jpg';
+            e.target.src = defaultFallback;
           }}
         />
+
+        {isVideoTour && (
+          <div style={{
+            position: 'absolute',
+            bottom: '12px',
+            left: '12px',
+            background: 'rgba(15, 23, 42, 0.85)',
+            backdropFilter: 'blur(4px)',
+            color: '#ffffff',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            padding: '0.3rem 0.65rem',
+            borderRadius: '6px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            zIndex: 3
+          }}>
+            <Play size={12} fill="#ffffff" />
+            <span>Video Walkthrough</span>
+          </div>
+        )}
 
         <div className="card-badge-top-left">
           <span className={`badge-status ${statusClass}`}>

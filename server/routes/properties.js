@@ -54,6 +54,22 @@ export function generateSlug(title, currentId = null) {
   }
 }
 
+// Helper: Extract thumbnail from video URL (YouTube, Vimeo)
+export function extractVideoThumbnail(videoUrl) {
+  if (!videoUrl || typeof videoUrl !== 'string') return null;
+  // YouTube (watch?v=, youtu.be/, embed/, shorts/)
+  const ytMatch = videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/i);
+  if (ytMatch && ytMatch[1]) {
+    return `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+  }
+  // Vimeo
+  const vimeoMatch = videoUrl.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+  if (vimeoMatch && vimeoMatch[1]) {
+    return `https://vumbnail.com/${vimeoMatch[1]}.jpg`;
+  }
+  return null;
+}
+
 // Helper: Attach media to property row
 function attachMedia(property) {
   if (!property) return null;
@@ -83,15 +99,37 @@ function attachMedia(property) {
     nearbyLandmarks = [];
   }
 
+  // 1. If images exist, use designated primary image or first uploaded image
   const primaryImage = images.find(img => img.is_primary === 1) || images[0] || null;
+  let primaryUrl = primaryImage ? primaryImage.url : null;
+  let isVideoThumbnail = false;
+
+  // 2. If NO uploaded photo, check if video is available and extract its thumbnail
+  if (!primaryUrl && videos && videos.length > 0) {
+    for (const v of videos) {
+      const thumb = extractVideoThumbnail(v.video_url);
+      if (thumb) {
+        primaryUrl = thumb;
+        isVideoThumbnail = true;
+        break;
+      }
+    }
+  }
+
+  // 3. If neither photo nor video thumbnail exists, use property-type default image
+  if (!primaryUrl) {
+    const isPlot = property.property_type && (property.property_type.includes('Plot') || property.property_type.includes('Land'));
+    primaryUrl = isPlot ? '/uploads/properties/plot-1.jpg' : '/uploads/properties/villa-1.jpg';
+  }
 
   return {
     ...property,
     amenities,
     nearby_landmarks: nearbyLandmarks,
-    images,
+    images: images, // Strictly return only real uploaded images from database
     videos,
-    primary_image: primaryImage ? primaryImage.url : '/uploads/properties/villa-1.jpg'
+    primary_image: primaryUrl,
+    has_video_thumbnail: isVideoThumbnail
   };
 }
 
